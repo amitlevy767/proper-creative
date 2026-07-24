@@ -199,7 +199,7 @@
     </div>
     <div class="field">
       <label>Ideogram API Key</label>
-      <input type="password" id="apiKeyInput" placeholder="ideogram-...">
+      <input type="password" id="apiKeyInput" dir="ltr" style="direction:ltr;text-align:left;font-family:monospace" placeholder="ideogram-..." autocomplete="off" spellcheck="false">
     </div>
     <div class="row">
       <button class="btn primary" id="saveKeyBtn">שמור</button>
@@ -214,8 +214,10 @@
 <script>
 /* ============ storage ============ */
 const LS_KEY='proper_ideogram_key', LS_HIST='proper_creative_hist';
-const getKey = () => localStorage.getItem(LS_KEY) || '';
-const setKey = k => localStorage.setItem(LS_KEY, k);
+/* strip anything outside printable ASCII — headers must be ISO-8859-1 */
+const cleanKey = k => (k || '').replace(/[^\x21-\x7E]/g, '');
+const getKey = () => cleanKey(localStorage.getItem(LS_KEY) || '');
+const setKey = k => localStorage.setItem(LS_KEY, cleanKey(k));
 const clearKey = () => localStorage.removeItem(LS_KEY);
 const getHistory = () => JSON.parse(localStorage.getItem(LS_HIST) || '[]');
 const pushHistory = (item) => {
