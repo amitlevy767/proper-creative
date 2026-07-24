@@ -141,12 +141,13 @@
   .editor-modal header .header-actions{display:flex;gap:8px;align-items:center}
   .editor-modal .close{background:none;border:none;color:#9a958c;font-size:20px;cursor:pointer;padding:4px 10px}
   .editor-body{
-    display:grid;grid-template-columns:1fr 360px;gap:0;
+    display:grid;grid-template-columns:360px 1fr;gap:0;
     flex:1;min-height:0;overflow:hidden
   }
   @media (max-width:900px){
     .editor-body{grid-template-columns:1fr;grid-template-rows:1fr auto}
-    .editor-controls{max-height:50vh}
+    .editor-preview{order:1}
+    .editor-controls{order:2;max-height:50vh}
   }
   .editor-preview{
     background:#0a0a09;padding:16px;
@@ -158,10 +159,10 @@
     border:1px solid var(--line);border-radius:8px;background:#000
   }
   .editor-controls{
-    border-right:1px solid var(--line);padding:16px;
-    overflow-y:auto;min-height:0
+    border-left:1px solid var(--line);padding:16px;
+    overflow-y:auto;min-height:0;background:var(--panel)
   }
-  @media (max-width:900px){.editor-controls{border-right:none;border-top:1px solid var(--line)}}
+  @media (max-width:900px){.editor-controls{border-left:none;border-top:1px solid var(--line)}}
   .editor-section{padding:12px 0;border-bottom:1px solid var(--line)}
   .editor-section:last-child{border-bottom:none}
   .editor-section .sec-title{
@@ -421,10 +422,6 @@
     </header>
 
     <div class="editor-body">
-      <div class="editor-preview">
-        <canvas id="editorCanvas"></canvas>
-      </div>
-
       <div class="editor-controls">
 
         <div class="editor-section">
@@ -522,6 +519,12 @@
               <input type="file" id="edLogoFile" accept="image/*">
             </label>
             <div id="logoPreview" style="margin-top:8px"></div>
+            <div id="removeBgWrap" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px">
+              <button type="button" class="btn small" id="removeBgBtn" style="width:100%">🎨 הסר רקע לבן מהלוגו</button>
+              <label style="margin-top:8px;display:block;font-size:11px">רגישות: <b id="rbTolVal">40</b></label>
+              <input type="range" id="rbTolerance" min="10" max="120" value="40">
+              <div class="hint" style="font-size:10px">גבוה = מסיר יותר (כולל צללים). נמוך = מסיר רק לבן טהור.</div>
+            </div>
             <div class="field" style="margin-top:12px">
               <label>מיקום הלוגו</label>
               <div class="row3" id="logoPositions" style="gap:6px">
@@ -559,6 +562,10 @@
           </div>
         </div>
 
+      </div>
+
+      <div class="editor-preview">
+        <canvas id="editorCanvas"></canvas>
       </div>
     </div>
   </div>
@@ -1048,13 +1055,86 @@ async function loadLogoFromDataUrl(dataUrl, fileName) {
     logoImg = null;
     $('logoPreview').innerHTML = '';
     $('edLogoFile').value = '';
+    $('removeBgWrap').style.display = 'none';
     drawEditor();
   };
   $('edUseLogo').checked = true;
   $('edLogoBox').style.display = 'block';
+  $('removeBgWrap').style.display = 'block';
   syncEditorLabels();
   drawEditor();
 }
+
+/* ============ background removal (client-side, corner-sample threshold) ============ */
+function removeBackground(image, tolerance) {
+  const c = document.createElement('canvas');
+  c.width = image.naturalWidth;
+  c.height = image.naturalHeight;
+  const cx = c.getContext('2d');
+  cx.drawImage(image, 0, 0);
+  const imgData = cx.getImageData(0, 0, c.width, c.height);
+  const p = imgData.data;
+  /* sample background from a small ring near corners (avg) */
+  const samples = [];
+  const s = 4; /* corner window */
+  const readAt = (x, y) => {
+    const i = (y * c.width + x) * 4;
+    return [p[i], p[i+1], p[i+2]];
+  };
+  for (let dy = 0; dy < s; dy++) for (let dx = 0; dx < s; dx++) {
+    samples.push(readAt(dx, dy));
+    samples.push(readAt(c.width - 1 - dx, dy));
+    samples.push(readAt(dx, c.height - 1 - dy));
+    samples.push(readAt(c.width - 1 - dx, c.height - 1 - dy));
+  }
+  const bg = [0, 0, 0];
+  samples.forEach(s => { bg[0]+=s[0]; bg[1]+=s[1]; bg[2]+=s[2]; });
+  bg[0] = bg[0] / samples.length;
+  bg[1] = bg[1] / samples.length;
+  bg[2] = bg[2] / samples.length;
+
+  /* remove pixels within tolerance (soft edge over 'edge' pixels) */
+  const edge = 15;
+  for (let i = 0; i < p.length; i += 4) {
+    const dr = p[i] - bg[0], dg = p[i+1] - bg[1], db = p[i+2] - bg[2];
+    const dist = Math.sqrt(dr*dr + dg*dg + db*db);
+    if (dist < tolerance) {
+      p[i+3] = 0;
+    } else if (dist < tolerance + edge) {
+      const t = (dist - tolerance) / edge;
+      p[i+3] = Math.round(p[i+3] * t);
+    }
+  }
+  cx.putImageData(imgData, 0, 0);
+  return c.toDataURL('image/png');
+}
+
+$('rbTolerance').oninput = () => { $('rbTolVal').textContent = $('rbTolerance').value; };
+
+$('removeBgBtn').onclick = async () => {
+  if (!logoImg) { toast('אין לוגו טעון', 'error'); return; }
+  const tol = parseInt($('rbTolerance').value);
+  const btn = $('removeBgBtn');
+  btn.textContent = '⏳ מסיר רקע…';
+  btn.disabled = true;
+  /* give the UI a chance to repaint before the blocking work */
+  await new Promise(r => setTimeout(r, 30));
+  try {
+    const dataUrl = removeBackground(logoImg, tol);
+    /* replace logoImg with the transparent version, keep the same file name label */
+    const oldName = $('logoPreview').querySelector('.lp-info')?.textContent?.split(' · ')[0] || 'לוגו';
+    await loadLogoFromDataUrl(dataUrl, oldName + ' (ללא רקע)');
+    /* if user had "save as default" on, re-save the transparent version */
+    if ($('edLogoDefault').checked) {
+      try { localStorage.setItem(LS_LOGO, dataUrl); } catch {}
+    }
+    toast('רקע הוסר', 'success');
+  } catch (err) {
+    toast('נכשל: ' + err.message, 'error');
+  }
+  btn.textContent = '🎨 הסר רקע לבן מהלוגו';
+  btn.disabled = false;
+};
 
 $('edLogoFile').onchange = async e => {
   const file = e.target.files[0];
