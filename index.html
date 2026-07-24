@@ -62,6 +62,24 @@
   .ref-preview .rp-info .rp-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#c9c4bc;font-weight:600}
   .ref-preview .rp-clear{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px}
 
+  /* drop zone for reference image */
+  .dropzone{
+    border:2px dashed var(--line);border-radius:10px;padding:20px 12px;text-align:center;
+    background:var(--bg);color:#8a857c;font-size:12px;cursor:pointer;transition:.2s;
+    display:flex;flex-direction:column;align-items:center;gap:6px
+  }
+  .dropzone:hover{border-color:var(--amber);color:var(--amber)}
+  .dropzone .dz-icon{font-size:24px;opacity:.6}
+  .dropzone .dz-hint{font-size:10px;color:#6b665e}
+  .dropzone input[type="file"]{display:none}
+  body.dragging::before{
+    content:"שחרר תמונה כרפרנס";position:fixed;inset:20px;
+    border:3px dashed var(--amber);border-radius:20px;background:rgba(255,179,71,.08);
+    z-index:1000;display:flex;align-items:center;justify-content:center;
+    color:var(--amber);font-size:32px;font-weight:800;letter-spacing:2px;
+    pointer-events:none
+  }
+
   /* results */
   .results{min-height:400px}
   .results h2{font-size:14px;font-weight:800;color:var(--amber);letter-spacing:2px;margin-bottom:14px;text-transform:uppercase}
@@ -158,7 +176,12 @@
           <input type="checkbox" id="useReference"> תמונת רפרנס (סגנון דומה — Remix)
         </label>
         <div id="referenceBox" style="display:none;margin-top:10px">
-          <input type="file" id="refFile" accept="image/*">
+          <label class="dropzone" id="dropzone">
+            <div class="dz-icon">📎</div>
+            <div><b>גרור לכאן תמונה</b> או לחץ לבחירה</div>
+            <div class="dz-hint">PNG · JPG · WEBP · עד 10MB</div>
+            <input type="file" id="refFile" accept="image/*">
+          </label>
           <div id="refPreview"></div>
           <label style="margin-top:12px">עוצמת השפעה: <b id="strengthVal">50</b>%</label>
           <input type="range" id="strength" min="10" max="90" value="50">
@@ -223,8 +246,12 @@
       <h2 id="resultsTitle">תוצאות</h2>
       <div class="cards" id="cards">
         <div class="empty">
-          מלא תיאור בעברית או באנגלית, לחץ "צור תמונות".<br>
-          לאחר יצירה — הקש <b>✎ ערוך טקסט</b> על תמונה כדי להוסיף מסר עברי.
+          <b style="color:#c9c4bc">איך זה עובד:</b><br><br>
+          1. מלא תיאור בעברית או אנגלית + טקסט הפוסט → לחץ "צור תמונות"<br>
+          2. תמונות ייווצרו כאן. עבור עם העכבר על כל אחת → לחץ <b style="color:var(--amber)">✎ ערוך טקסט</b><br>
+          3. בעורך תמצא <b>13 פונטים עבריים</b>, שליטה בגודל, צבע, מיקום, רקע<br>
+          4. הורד PNG מוכן לפוסט<br><br>
+          <span style="font-size:11px;color:#6b665e">טיפ: אתה יכול לגרור תמונה מהמחשב לכל מקום בעמוד כדי להשתמש בה כרפרנס</span>
         </div>
       </div>
 
@@ -424,11 +451,19 @@ $('useReference').onchange = e => {
 $('strength').oninput = e => { $('strengthVal').textContent = e.target.value; };
 
 let refFileData = null; // { file, dataUrl }
-$('refFile').onchange = async e => {
-  const file = e.target.files[0];
-  if (!file) return;
+async function loadReferenceFile(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    toast('רק תמונות (PNG/JPG/WEBP)', 'error');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    toast('התמונה גדולה מדי (מקסימום 10MB)', 'error');
+    return;
+  }
   const dataUrl = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(file); });
   refFileData = { file, dataUrl };
+  $('useReference').checked = true;
+  $('referenceBox').style.display = 'block';
   $('refPreview').innerHTML = `
     <div class="ref-preview">
       <img src="${dataUrl}" alt="">
@@ -436,7 +471,30 @@ $('refFile').onchange = async e => {
       <button class="rp-clear" id="rpClear" title="הסר">✕</button>
     </div>`;
   $('rpClear').onclick = () => { refFileData = null; $('refFile').value=''; $('refPreview').innerHTML=''; };
-};
+  toast('רפרנס נטען · הפעלתי Remix אוטומטית', 'success');
+}
+$('refFile').onchange = e => { if (e.target.files[0]) loadReferenceFile(e.target.files[0]); };
+
+/* ============ drag-and-drop anywhere on page ============ */
+let dragDepth = 0;
+window.addEventListener('dragenter', e => {
+  if (!e.dataTransfer || !Array.from(e.dataTransfer.types || []).includes('Files')) return;
+  e.preventDefault();
+  dragDepth++;
+  document.body.classList.add('dragging');
+});
+window.addEventListener('dragleave', e => {
+  dragDepth--;
+  if (dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dragging'); }
+});
+window.addEventListener('dragover', e => { if (Array.from(e.dataTransfer?.types || []).includes('Files')) e.preventDefault(); });
+window.addEventListener('drop', e => {
+  dragDepth = 0;
+  document.body.classList.remove('dragging');
+  if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+  e.preventDefault();
+  loadReferenceFile(e.dataTransfer.files[0]);
+});
 
 /* ============ generate — text or remix ============ */
 async function generateOne({ prompt, aspect, style, model, apiKey, referenceFile, imageWeight }) {
