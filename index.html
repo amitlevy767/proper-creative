@@ -100,6 +100,7 @@
   .card .overlay button{background:rgba(255,179,71,.95);border:none;color:#1a1204;font-family:inherit;font-size:12px;font-weight:800;padding:6px 10px;border-radius:8px;cursor:pointer;transition:.15s}
   .card .overlay button:hover{background:#fff}
   .card .overlay button.secondary{background:rgba(255,255,255,.15);color:#fff}
+  .card .overlay button.danger-btn:hover{background:var(--red);color:#fff}
   .card.loading{display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:12px;letter-spacing:2px;text-transform:uppercase;background:var(--panel)}
   .card.loading .dot{display:inline-block;width:6px;height:6px;background:var(--amber);border-radius:50%;margin:0 3px;animation:pulse 1.2s infinite ease-in-out}
   .card.loading .dot:nth-child(2){animation-delay:.15s}
@@ -356,7 +357,16 @@
       </div>
 
       <div class="history">
-        <h2>היסטוריה</h2>
+        <h2>⭐ שמורות בפרויקט זה <span id="savedCount" style="color:#6b665e;font-weight:400">(0)</span></h2>
+        <div class="cards" id="savedCards" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:24px">
+          <div class="empty" style="grid-column:1/-1;padding:24px;font-size:12px">
+            אין תמונות שמורות בפרויקט זה. לחץ ⭐ שמור על תמונה מוצלחת.
+          </div>
+        </div>
+      </div>
+
+      <div class="history">
+        <h2>היסטוריית פרומפטים</h2>
         <div id="historyList"></div>
       </div>
     </div>
@@ -858,9 +868,10 @@ async function generate() {
       el.innerHTML = `
         <img src="${url}" alt="">
         <div class="overlay">
-          <button data-url="${url}" data-act="edit">✎ ערוך טקסט</button>
+          <button data-url="${url}" data-act="edit">✎ ערוך</button>
+          <button data-url="${url}" data-act="save" class="secondary">⭐ שמור</button>
           <button data-url="${url}" data-act="dl" class="secondary">⬇ הורד</button>
-          <button data-url="${url}" data-act="open" class="secondary">🔗 פתח</button>
+          <button data-act="delete" class="secondary danger-btn">✕ מחק</button>
         </div>`;
     } catch (err) {
       el.classList.remove('loading');
@@ -883,10 +894,11 @@ $('generateBtn').onclick = generate;
 
 /* ============ card actions ============ */
 cards.addEventListener('click', async (e) => {
-  const btn = e.target.closest('button[data-url]');
+  const btn = e.target.closest('button[data-act]');
   if (!btn) return;
   const url = btn.dataset.url;
   const act = btn.dataset.act;
+  const cardEl = btn.closest('.card');
 
   if (act === 'open') {
     window.open(url, '_blank');
@@ -898,8 +910,50 @@ cards.addEventListener('click', async (e) => {
     } catch { window.open(url, '_blank'); }
   } else if (act === 'edit') {
     openEditor(url);
+  } else if (act === 'save') {
+    await saveImageToProject(url, cardEl);
+  } else if (act === 'delete') {
+    cardEl.style.opacity = '0.4';
+    cardEl.style.pointerEvents = 'none';
+    cardEl.remove();
+    toast('נמחק מהתצוגה', 'success');
   }
 });
+
+async function saveImageToProject(url, cardEl) {
+  const projId = getCurrentProjectId();
+  if (!projId) { toast('אין פרויקט פעיל', 'error'); return; }
+  const origBtn = cardEl.querySelector('button[data-act="save"]');
+  if (origBtn) { origBtn.textContent = '⏳ שומר…'; origBtn.disabled = true; }
+  try {
+    const r = await fetch('/api/image?url=' + encodeURIComponent(url));
+    const blob = await r.blob();
+    const dataUrl = await new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(fr.result);
+      fr.onerror = rej;
+      fr.readAsDataURL(blob);
+    });
+    /* persist to project.saved */
+    const arr = getProjects();
+    const p = arr.find(x => x.id === projId);
+    if (!p) throw new Error('פרויקט לא נמצא');
+    p.saved = p.saved || [];
+    p.saved.unshift({ id: uid(), dataUrl, savedAt: Date.now() });
+    if (p.saved.length > 40) p.saved = p.saved.slice(0, 40);
+    saveProjects(arr);
+    renderSaved();
+    if (origBtn) { origBtn.textContent = '✓ נשמר'; setTimeout(() => { origBtn.textContent = '⭐ שמור'; origBtn.disabled = false; }, 1200); }
+    toast('נשמר בפרויקט', 'success');
+  } catch (err) {
+    if (origBtn) { origBtn.textContent = '⭐ שמור'; origBtn.disabled = false; }
+    if (String(err.message||'').includes('quota')) {
+      toast('אין מקום בזיכרון הדפדפן — מחק תמונות שמורות ישנות', 'error');
+    } else {
+      toast('שמירה נכשלה: ' + err.message, 'error');
+    }
+  }
+}
 
 function downloadBlob(blob, name) {
   const a = document.createElement('a');
@@ -925,9 +979,13 @@ async function openEditor(url) {
 
   try {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    /* fetch via our proxy to guarantee same-origin (avoids canvas taint) */
-    img.src = '/api/image?url=' + encodeURIComponent(url);
+    /* if it's already a data URL (saved image) — load directly. otherwise proxy. */
+    if (url.startsWith('data:')) {
+      img.src = url;
+    } else {
+      img.crossOrigin = 'anonymous';
+      img.src = '/api/image?url=' + encodeURIComponent(url);
+    }
     await new Promise((resolve, reject) => {
       img.onload = resolve;
       img.onerror = () => reject(new Error('נכשל בטעינת תמונה'));
@@ -1222,7 +1280,64 @@ function renderProjectBar() {
 $('currentProjectSelect').onchange = e => {
   setCurrentProjectId(e.target.value);
   renderProjectBar();
+  renderSaved();
 };
+
+function renderSaved() {
+  const cur = getCurrentProject();
+  const container = $('savedCards');
+  const countEl = $('savedCount');
+  const saved = (cur && cur.saved) || [];
+  countEl.textContent = '(' + saved.length + ')';
+  container.innerHTML = '';
+  if (!saved.length) {
+    container.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:24px;font-size:12px">אין תמונות שמורות בפרויקט זה. לחץ ⭐ שמור על תמונה מוצלחת.</div>';
+    return;
+  }
+  saved.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.style.aspectRatio = '1/1';
+    el.innerHTML = `
+      <img src="${item.dataUrl}" alt="">
+      <div class="overlay">
+        <button data-sid="${item.id}" data-act="s-edit">✎ ערוך</button>
+        <button data-sid="${item.id}" data-act="s-dl" class="secondary">⬇ הורד</button>
+        <button data-sid="${item.id}" data-act="s-del" class="secondary danger-btn">✕ מחק</button>
+      </div>`;
+    container.appendChild(el);
+  });
+}
+
+$('savedCards').addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-sid]');
+  if (!btn) return;
+  const sid = btn.dataset.sid;
+  const act = btn.dataset.act;
+  const cur = getCurrentProject();
+  if (!cur || !cur.saved) return;
+  const item = cur.saved.find(x => x.id === sid);
+  if (!item) return;
+
+  if (act === 's-edit') {
+    openEditor(item.dataUrl);
+  } else if (act === 's-dl') {
+    try {
+      const blob = await (await fetch(item.dataUrl)).blob();
+      downloadBlob(blob, `proper-saved-${sid}.png`);
+    } catch { toast('הורדה נכשלה', 'error'); }
+  } else if (act === 's-del') {
+    if (!confirm('למחוק את התמונה השמורה?')) return;
+    const arr = getProjects();
+    const p = arr.find(x => x.id === cur.id);
+    if (p && p.saved) {
+      p.saved = p.saved.filter(x => x.id !== sid);
+      saveProjects(arr);
+      renderSaved();
+      toast('נמחקה', 'success');
+    }
+  }
+});
 
 $('quickNewProject').onclick = () => {
   const name = prompt('שם פרויקט חדש:', 'פרויקט ' + (getProjects().length + 1));
@@ -1401,6 +1516,7 @@ renderHistory();
 /* ============ init projects (must run before first render) ============ */
 ensureDefaultProject();
 renderProjectBar();
+renderSaved();
 
 /* ============ open settings on first load if no key ============ */
 if (!getKey()) {
