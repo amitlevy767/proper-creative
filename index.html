@@ -72,6 +72,12 @@
   .dropzone .dz-icon{font-size:24px;opacity:.6}
   .dropzone .dz-hint{font-size:10px;color:#6b665e}
   .dropzone input[type="file"]{display:none}
+  #logoPositions .btn{padding:8px 4px;font-size:11px}
+  #logoPositions .btn.active{background:var(--amber);color:#1a1204;border-color:var(--amber)}
+  .logo-preview-row{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;display:flex;gap:8px;align-items:center}
+  .logo-preview-row img{width:44px;height:44px;object-fit:contain;background:repeating-conic-gradient(#222 0 25%,#333 0 50%) 50%/12px 12px;border-radius:4px}
+  .logo-preview-row .lp-info{font-size:11px;color:#8a857c;flex:1;min-width:0}
+  .logo-preview-row .lp-clear{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px}
   body.dragging::before{
     content:"שחרר תמונה כרפרנס";position:fixed;inset:20px;
     border:3px dashed var(--amber);border-radius:20px;background:rgba(255,179,71,.08);
@@ -376,6 +382,54 @@
           </div>
         </div>
 
+        <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+
+        <div class="field">
+          <label class="field-toggle">
+            <input type="checkbox" id="edUseLogo"> הוסף לוגו לתמונה
+          </label>
+          <div id="edLogoBox" style="display:none;margin-top:10px">
+            <label class="dropzone" id="logoDrop" style="padding:14px 10px">
+              <div class="dz-icon" style="font-size:20px">🏷</div>
+              <div id="logoDropText"><b>גרור לוגו</b> או לחץ לבחירה</div>
+              <div class="dz-hint">מומלץ: PNG עם רקע שקוף</div>
+              <input type="file" id="edLogoFile" accept="image/*">
+            </label>
+            <div id="logoPreview" style="margin-top:8px"></div>
+
+            <div class="field" style="margin-top:12px;margin-bottom:0">
+              <label>מיקום הלוגו</label>
+              <div class="row3" id="logoPositions" style="gap:6px">
+                <button type="button" class="btn small" data-pos="tl">↖ ש״ע</button>
+                <button type="button" class="btn small" data-pos="tc">↑ מרכז ע</button>
+                <button type="button" class="btn small" data-pos="tr">↗ י״ע</button>
+                <button type="button" class="btn small" data-pos="bl">↙ ש״ת</button>
+                <button type="button" class="btn small" data-pos="bc">↓ מרכז ת</button>
+                <button type="button" class="btn small" data-pos="br">↘ י״ת</button>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:12px">
+              <div class="row">
+                <div>
+                  <label>גודל: <b id="logoSizeVal">15</b>%</label>
+                  <input type="range" id="edLogoSize" min="5" max="40" value="15">
+                </div>
+                <div>
+                  <label>שקיפות: <b id="logoOpacityVal">100</b>%</label>
+                  <input type="range" id="edLogoOpacity" min="20" max="100" value="100">
+                </div>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:8px;margin-bottom:0">
+              <label class="field-toggle" style="font-size:12px">
+                <input type="checkbox" id="edLogoDefault"> שמור כלוגו ברירת מחדל (יטען אוטומטית בכל פעם)
+              </label>
+            </div>
+          </div>
+        </div>
+
         <div class="editor-actions">
           <button class="btn primary" id="edDownload">⬇ הורד PNG</button>
           <button class="btn" id="edReset">↺ אפס</button>
@@ -392,7 +446,7 @@
 
 <script>
 /* ============ storage ============ */
-const LS_KEY='proper_ideogram_key', LS_HIST='proper_creative_hist';
+const LS_KEY='proper_ideogram_key', LS_HIST='proper_creative_hist', LS_LOGO='proper_default_logo';
 const cleanKey = k => (k || '').replace(/[^\x21-\x7E]/g, '');
 const getKey = () => cleanKey(localStorage.getItem(LS_KEY) || '');
 const setKey = k => localStorage.setItem(LS_KEY, cleanKey(k));
@@ -488,12 +542,20 @@ window.addEventListener('dragleave', e => {
   if (dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dragging'); }
 });
 window.addEventListener('dragover', e => { if (Array.from(e.dataTransfer?.types || []).includes('Files')) e.preventDefault(); });
-window.addEventListener('drop', e => {
+window.addEventListener('drop', async e => {
   dragDepth = 0;
   document.body.classList.remove('dragging');
   if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
   e.preventDefault();
-  loadReferenceFile(e.dataTransfer.files[0]);
+  const file = e.dataTransfer.files[0];
+  /* if the editor is open, drop = logo. otherwise = reference for generation. */
+  if (editorModal.classList.contains('open')) {
+    if (!file.type.startsWith('image/')) { toast('רק תמונות', 'error'); return; }
+    const dataUrl = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(file); });
+    await loadLogoFromDataUrl(dataUrl, file.name);
+  } else {
+    loadReferenceFile(file);
+  }
 });
 
 /* ============ generate — text or remix ============ */
@@ -634,6 +696,8 @@ async function openEditor(url) {
   $('edText').value = $('overlayText').value || '';
   editorModal.classList.add('open');
   toast('טוען תמונה…');
+  /* auto-load saved default logo */
+  if (!logoImg) tryLoadDefaultLogo();
 
   try {
     const img = new Image();
@@ -658,7 +722,8 @@ $('editorClose').onclick = () => editorModal.classList.remove('open');
 editorModal.addEventListener('click', e => { if (e.target === editorModal) editorModal.classList.remove('open'); });
 
 /* live redraw on any change */
-['edText','edFont','edWeight','edSize','edColor','edPosY','edBox','edBoxColor','edBoxOpacity'].forEach(id => {
+['edText','edFont','edWeight','edSize','edColor','edPosY','edBox','edBoxColor','edBoxOpacity',
+ 'edUseLogo','edLogoSize','edLogoOpacity'].forEach(id => {
   $(id).addEventListener('input', () => { syncEditorLabels(); drawEditor(); });
   $(id).addEventListener('change', () => { syncEditorLabels(); drawEditor(); });
 });
@@ -667,6 +732,75 @@ function syncEditorLabels() {
   $('sizeVal').textContent = $('edSize').value;
   $('opacityVal').textContent = $('edBoxOpacity').value;
   $('edBoxControls').style.display = $('edBox').checked ? 'block' : 'none';
+  $('logoSizeVal').textContent = $('edLogoSize').value;
+  $('logoOpacityVal').textContent = $('edLogoOpacity').value;
+  $('edLogoBox').style.display = $('edUseLogo').checked ? 'block' : 'none';
+}
+
+/* ============ logo handling ============ */
+let logoImg = null;   /* HTMLImageElement */
+let logoPos = 'br';   /* default position */
+
+function updateLogoPositionUI() {
+  document.querySelectorAll('#logoPositions .btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.pos === logoPos);
+  });
+}
+document.querySelectorAll('#logoPositions .btn').forEach(b => {
+  b.onclick = () => { logoPos = b.dataset.pos; updateLogoPositionUI(); drawEditor(); };
+});
+updateLogoPositionUI();
+
+async function loadLogoFromDataUrl(dataUrl, fileName) {
+  const img = new Image();
+  img.src = dataUrl;
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+  logoImg = img;
+  $('logoPreview').innerHTML = `
+    <div class="logo-preview-row">
+      <img src="${dataUrl}" alt="">
+      <div class="lp-info">${fileName || 'לוגו'} · ${img.naturalWidth}×${img.naturalHeight}</div>
+      <button class="lp-clear" id="lpClear" title="הסר">✕</button>
+    </div>`;
+  $('lpClear').onclick = () => {
+    logoImg = null;
+    $('logoPreview').innerHTML = '';
+    $('edLogoFile').value = '';
+    drawEditor();
+  };
+  $('edUseLogo').checked = true;
+  $('edLogoBox').style.display = 'block';
+  syncEditorLabels();
+  drawEditor();
+}
+
+$('edLogoFile').onchange = async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { toast('רק תמונות', 'error'); return; }
+  const dataUrl = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(file); });
+  await loadLogoFromDataUrl(dataUrl, file.name);
+  if ($('edLogoDefault').checked) {
+    try { localStorage.setItem(LS_LOGO, dataUrl); toast('לוגו נשמר כברירת מחדל', 'success'); }
+    catch { toast('לא הצליח לשמור (תמונה גדולה מדי)', 'error'); }
+  }
+};
+
+$('edLogoDefault').onchange = () => {
+  if ($('edLogoDefault').checked && logoImg) {
+    try { localStorage.setItem(LS_LOGO, logoImg.src); toast('לוגו נשמר כברירת מחדל', 'success'); }
+    catch {}
+  } else if (!$('edLogoDefault').checked) {
+    localStorage.removeItem(LS_LOGO);
+  }
+};
+
+function tryLoadDefaultLogo() {
+  const saved = localStorage.getItem(LS_LOGO);
+  if (!saved) return;
+  loadLogoFromDataUrl(saved, 'לוגו ברירת מחדל').then(() => {
+    $('edLogoDefault').checked = true;
+  }).catch(() => {});
 }
 
 function wrapText(text, maxWidth, ctx) {
@@ -758,6 +892,28 @@ async function drawEditor() {
   lines.forEach((line, i) => {
     ctx.fillText(line, centerX, startY + i * lineHeight);
   });
+
+  /* Logo overlay */
+  if ($('edUseLogo').checked && logoImg) {
+    const logoPct = parseInt($('edLogoSize').value) / 100;
+    const logoOpacity = parseInt($('edLogoOpacity').value) / 100;
+    const targetW = canvas.width * logoPct;
+    const scale = targetW / logoImg.naturalWidth;
+    const targetH = logoImg.naturalHeight * scale;
+    const margin = Math.min(canvas.width, canvas.height) * 0.03;
+
+    let lx, ly;
+    if (logoPos.startsWith('t')) ly = margin;
+    else ly = canvas.height - targetH - margin;
+    if (logoPos.endsWith('l')) lx = margin;
+    else if (logoPos.endsWith('r')) lx = canvas.width - targetW - margin;
+    else lx = (canvas.width - targetW) / 2;
+
+    ctx.save();
+    ctx.globalAlpha = logoOpacity;
+    ctx.drawImage(logoImg, lx, ly, targetW, targetH);
+    ctx.restore();
+  }
 }
 
 $('edDownload').onclick = () => {
@@ -779,6 +935,11 @@ $('edReset').onclick = () => {
   $('edBox').checked = true;
   $('edBoxColor').value = '#000000';
   $('edBoxOpacity').value = '55';
+  /* logo — keep the loaded logo, just reset its position/size to defaults */
+  logoPos = 'br';
+  $('edLogoSize').value = '15';
+  $('edLogoOpacity').value = '100';
+  updateLogoPositionUI();
   syncEditorLabels();
   drawEditor();
 };
