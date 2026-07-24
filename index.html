@@ -126,19 +126,101 @@
   .modal .modal-hint a{color:var(--amber);text-decoration:underline}
   .modal .row{display:flex;gap:10px;margin-top:16px}
 
-  /* editor modal */
-  .editor-modal{max-width:1200px;padding:0}
-  .editor-modal header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .editor-modal header h2{margin:0}
+  /* editor modal — flex-based so scroll always works */
+  .editor-modal{
+    max-width:1240px;max-height:calc(100vh - 40px);
+    padding:0;display:flex;flex-direction:column;overflow:hidden
+  }
+  .editor-modal header{
+    padding:12px 20px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    flex-shrink:0;background:var(--panel)
+  }
+  .editor-modal header h2{margin:0;font-size:15px}
+  .editor-modal header .header-actions{display:flex;gap:8px;align-items:center}
   .editor-modal .close{background:none;border:none;color:#9a958c;font-size:20px;cursor:pointer;padding:4px 10px}
-  .editor-body{display:grid;grid-template-columns:1fr 340px;gap:0;max-height:calc(100vh - 100px)}
-  @media (max-width:900px){.editor-body{grid-template-columns:1fr;max-height:none}}
-  .editor-preview{background:#0a0a09;padding:16px;display:flex;align-items:center;justify-content:center;min-height:400px}
-  .editor-preview canvas{max-width:100%;max-height:calc(100vh - 160px);display:block;border:1px solid var(--line);border-radius:8px}
-  .editor-controls{border-right:1px solid var(--line);padding:20px;overflow-y:auto}
-  @media (max-width:900px){.editor-controls{border-right:none;border-top:1px solid var(--line);max-height:60vh}}
-  .editor-actions{display:flex;gap:8px;margin-top:12px}
-  .editor-actions .btn{flex:1}
+  .editor-body{
+    display:grid;grid-template-columns:1fr 360px;gap:0;
+    flex:1;min-height:0;overflow:hidden
+  }
+  @media (max-width:900px){
+    .editor-body{grid-template-columns:1fr;grid-template-rows:1fr auto}
+    .editor-controls{max-height:50vh}
+  }
+  .editor-preview{
+    background:#0a0a09;padding:16px;
+    display:flex;align-items:center;justify-content:center;
+    min-height:0;overflow:auto
+  }
+  .editor-preview canvas{
+    max-width:100%;max-height:100%;display:block;
+    border:1px solid var(--line);border-radius:8px;background:#000
+  }
+  .editor-controls{
+    border-right:1px solid var(--line);padding:16px;
+    overflow-y:auto;min-height:0
+  }
+  @media (max-width:900px){.editor-controls{border-right:none;border-top:1px solid var(--line)}}
+  .editor-section{padding:12px 0;border-bottom:1px solid var(--line)}
+  .editor-section:last-child{border-bottom:none}
+  .editor-section .sec-title{
+    font-size:11px;font-weight:800;color:var(--amber);letter-spacing:1.5px;
+    text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center
+  }
+  .editor-section .field{margin-bottom:10px}
+  .editor-section .field:last-child{margin-bottom:0}
+
+  /* project bar */
+  .project-bar{
+    background:var(--panel);border-bottom:1px solid var(--line);
+    padding:10px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap
+  }
+  .project-bar select{
+    background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    font-family:inherit;font-size:14px;font-weight:600;padding:8px 12px;
+    border-radius:8px;min-width:200px;cursor:pointer
+  }
+  .project-bar .project-info{
+    display:flex;gap:16px;font-size:12px;color:#8a857c;align-items:center
+  }
+  .project-bar .project-info b{color:var(--amber);font-weight:800;font-size:13px}
+  .project-bar .spacer{flex:1}
+
+  /* clients/projects modal — bigger */
+  .cp-modal{max-width:720px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;padding:0;overflow:hidden}
+  .cp-modal header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-shrink:0}
+  .cp-modal header h2{font-size:16px;font-weight:800;color:var(--amber)}
+  .cp-modal header .btn{padding:8px 14px;font-size:13px}
+  .cp-body{overflow-y:auto;padding:16px 20px;flex:1;min-height:0}
+  .client-group{margin-bottom:20px}
+  .client-header{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    padding:8px 12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;
+    margin-bottom:8px
+  }
+  .client-header .cn{font-size:14px;font-weight:800;color:#e0dbcf}
+  .client-header .cn.standalone{color:#8a857c;font-weight:600}
+  .client-header .ca{display:flex;gap:4px}
+  .client-header .ca button{background:none;border:none;color:#8a857c;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:6px}
+  .client-header .ca button:hover{color:var(--amber);background:rgba(255,179,71,.1)}
+  .client-header .ca button.del:hover{color:var(--red);background:rgba(255,107,107,.1)}
+  .project-row{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:6px 0 6px 20px;
+    transition:.15s
+  }
+  .project-row:hover{border-color:var(--amber)}
+  .project-row.active{border-color:var(--amber);background:rgba(255,179,71,.05)}
+  .project-row .pn{flex:1;font-size:13px;color:#e0dbcf;font-weight:600;cursor:pointer}
+  .project-row .pm{font-size:11px;color:#8a857c;white-space:nowrap}
+  .project-row .pm b{color:var(--amber);font-weight:700}
+  .project-row .pa{display:flex;gap:2px}
+  .project-row .pa button{background:none;border:none;color:#8a857c;font-size:12px;cursor:pointer;padding:3px 6px;border-radius:4px}
+  .project-row .pa button:hover{color:var(--amber)}
+  .project-row .pa button.del:hover{color:var(--red)}
+  .add-project-inline{margin:4px 0 4px 20px;font-size:11px}
+  .add-project-inline button{background:none;border:1px dashed var(--line);color:#8a857c;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:11px}
+  .add-project-inline button:hover{border-color:var(--amber);color:var(--amber)}
 
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--amber);color:var(--ink);padding:12px 20px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transition:opacity .2s}
   .toast.show{opacity:1}
@@ -154,8 +236,20 @@
     <div class="subtitle">AI IMAGE GENERATOR · IDEOGRAM + HEBREW OVERLAY</div>
   </div>
   <div class="actions">
+    <button class="btn small" id="cpBtn">📁 לקוחות ופרויקטים</button>
     <button class="btn small" id="settingsBtn">⚙ הגדרות</button>
   </div>
+</div>
+
+<div class="project-bar">
+  <span style="font-size:12px;color:#8a857c;font-weight:600">פרויקט נוכחי:</span>
+  <select id="currentProjectSelect"></select>
+  <div class="project-info">
+    <span>תמונות: <b id="curImgCount">0</b></span>
+    <span>עלות: <b id="curCostTotal">$0.00</b></span>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn small" id="quickNewProject">+ פרויקט חדש</button>
 </div>
 
 <div class="container">
@@ -290,114 +384,135 @@
   </div>
 </div>
 
+<!-- clients & projects modal -->
+<div class="modal-backdrop" id="cpModal">
+  <div class="modal cp-modal">
+    <header>
+      <h2>לקוחות ופרויקטים</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="addClientBtn">+ הוסף לקוח</button>
+        <button class="close" id="cpClose">✕</button>
+      </div>
+    </header>
+    <div class="cp-body" id="cpBody"></div>
+  </div>
+</div>
+
 <!-- editor modal -->
 <div class="modal-backdrop" id="editorModal">
   <div class="modal editor-modal">
     <header>
-      <h2>עורך טקסט עברי</h2>
-      <button class="close" id="editorClose">✕</button>
+      <h2>עורך תמונה</h2>
+      <div class="header-actions">
+        <button class="btn primary" id="edDownload" style="width:auto;padding:10px 18px;font-size:14px">⬇ הורד PNG</button>
+        <button class="btn small" id="edReset">↺ אפס</button>
+        <button class="close" id="editorClose">✕</button>
+      </div>
     </header>
+
     <div class="editor-body">
       <div class="editor-preview">
         <canvas id="editorCanvas"></canvas>
       </div>
+
       <div class="editor-controls">
-        <div class="field">
-          <label>טקסט</label>
-          <textarea id="edText" rows="3" placeholder="הכנס טקסט להצגה על התמונה"></textarea>
-        </div>
 
-        <div class="field">
-          <label>פונט</label>
-          <select id="edFont">
-            <option value="Heebo">Heebo — מודרני, חמים</option>
-            <option value="Assistant">Assistant — נקי, מקצועי</option>
-            <option value="Rubik">Rubik — עגול, ידידותי</option>
-            <option value="Frank Ruhl Libre">Frank Ruhl — אלגנטי, ספרותי</option>
-            <option value="Miriam Libre">Miriam Libre — סריפי מסורתי</option>
-            <option value="Karantina">Karantina — דחוס, נוקב</option>
-            <option value="Suez One">Suez One — כבד, בולט</option>
-            <option value="Bellefair">Bellefair — קלאסי דק</option>
-            <option value="Amatic SC">Amatic SC — כתב יד</option>
-            <option value="Secular One">Secular One — סטטמנט</option>
-            <option value="Varela Round">Varela Round — עגלגל רך</option>
-            <option value="Alef">Alef — פשוט, קריא</option>
-            <option value="Arimo">Arimo — סטנדרטי בטוח</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <div class="row">
-            <div>
-              <label>משקל</label>
-              <select id="edWeight">
-                <option value="300">דק (300)</option>
-                <option value="400">רגיל (400)</option>
-                <option value="500">בינוני (500)</option>
-                <option value="600">חצי-כבד (600)</option>
-                <option value="700" selected>מודגש (700)</option>
-                <option value="800">כבד (800)</option>
-                <option value="900">שחור (900)</option>
-              </select>
-            </div>
-            <div>
-              <label>גודל: <b id="sizeVal">80</b>px</label>
-              <input type="range" id="edSize" min="20" max="240" value="80">
-            </div>
+        <div class="editor-section">
+          <div class="sec-title">✎ טקסט</div>
+          <div class="field">
+            <textarea id="edText" rows="3" placeholder="הכנס טקסט להצגה על התמונה"></textarea>
           </div>
-        </div>
-
-        <div class="field">
-          <div class="row">
-            <div>
-              <label>צבע טקסט</label>
-              <input type="color" id="edColor" value="#ffffff">
-            </div>
-            <div>
-              <label>מיקום אנכי</label>
-              <select id="edPosY">
-                <option value="top">למעלה</option>
-                <option value="center">מרכז</option>
-                <option value="bottom" selected>למטה</option>
-              </select>
-            </div>
+          <div class="field">
+            <label>פונט</label>
+            <select id="edFont">
+              <option value="Heebo">Heebo — מודרני, חמים</option>
+              <option value="Assistant">Assistant — נקי, מקצועי</option>
+              <option value="Rubik">Rubik — עגול, ידידותי</option>
+              <option value="Frank Ruhl Libre">Frank Ruhl — אלגנטי, ספרותי</option>
+              <option value="Miriam Libre">Miriam Libre — סריפי מסורתי</option>
+              <option value="Karantina">Karantina — דחוס, נוקב</option>
+              <option value="Suez One">Suez One — כבד, בולט</option>
+              <option value="Bellefair">Bellefair — קלאסי דק</option>
+              <option value="Amatic SC">Amatic SC — כתב יד</option>
+              <option value="Secular One">Secular One — סטטמנט</option>
+              <option value="Varela Round">Varela Round — עגלגל רך</option>
+              <option value="Alef">Alef — פשוט, קריא</option>
+              <option value="Arimo">Arimo — סטנדרטי בטוח</option>
+            </select>
           </div>
-        </div>
-
-        <div class="field">
-          <label class="field-toggle">
-            <input type="checkbox" id="edBox" checked> רקע מאחורי הטקסט
-          </label>
-          <div id="edBoxControls" style="margin-top:10px">
+          <div class="field">
             <div class="row">
               <div>
-                <label>צבע רקע</label>
-                <input type="color" id="edBoxColor" value="#000000">
+                <label>משקל</label>
+                <select id="edWeight">
+                  <option value="300">דק</option>
+                  <option value="400">רגיל</option>
+                  <option value="500">בינוני</option>
+                  <option value="600">חצי-כבד</option>
+                  <option value="700" selected>מודגש</option>
+                  <option value="800">כבד</option>
+                  <option value="900">שחור</option>
+                </select>
               </div>
               <div>
-                <label>שקיפות: <b id="opacityVal">55</b>%</label>
-                <input type="range" id="edBoxOpacity" min="0" max="100" value="55">
+                <label>גודל: <b id="sizeVal">80</b>px</label>
+                <input type="range" id="edSize" min="20" max="240" value="80">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="row">
+              <div>
+                <label>צבע</label>
+                <input type="color" id="edColor" value="#ffffff">
+              </div>
+              <div>
+                <label>מיקום אנכי</label>
+                <select id="edPosY">
+                  <option value="top">למעלה</option>
+                  <option value="center">מרכז</option>
+                  <option value="bottom" selected>למטה</option>
+                </select>
               </div>
             </div>
           </div>
         </div>
 
-        <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+        <div class="editor-section">
+          <div class="sec-title">
+            <span>▬ רקע לטקסט</span>
+            <label class="field-toggle" style="margin:0"><input type="checkbox" id="edBox" checked></label>
+          </div>
+          <div id="edBoxControls">
+            <div class="field">
+              <div class="row">
+                <div>
+                  <label>צבע רקע</label>
+                  <input type="color" id="edBoxColor" value="#000000">
+                </div>
+                <div>
+                  <label>שקיפות: <b id="opacityVal">55</b>%</label>
+                  <input type="range" id="edBoxOpacity" min="0" max="100" value="55">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <div class="field">
-          <label class="field-toggle">
-            <input type="checkbox" id="edUseLogo"> הוסף לוגו לתמונה
-          </label>
-          <div id="edLogoBox" style="display:none;margin-top:10px">
+        <div class="editor-section">
+          <div class="sec-title">
+            <span>🏷 לוגו</span>
+            <label class="field-toggle" style="margin:0"><input type="checkbox" id="edUseLogo"></label>
+          </div>
+          <div id="edLogoBox" style="display:none">
             <label class="dropzone" id="logoDrop" style="padding:14px 10px">
               <div class="dz-icon" style="font-size:20px">🏷</div>
-              <div id="logoDropText"><b>גרור לוגו</b> או לחץ לבחירה</div>
+              <div><b>גרור לוגו</b> או לחץ לבחירה</div>
               <div class="dz-hint">מומלץ: PNG עם רקע שקוף</div>
               <input type="file" id="edLogoFile" accept="image/*">
             </label>
             <div id="logoPreview" style="margin-top:8px"></div>
-
-            <div class="field" style="margin-top:12px;margin-bottom:0">
+            <div class="field" style="margin-top:12px">
               <label>מיקום הלוגו</label>
               <div class="row3" id="logoPositions" style="gap:6px">
                 <button type="button" class="btn small" data-pos="tl">↖ ש״ע</button>
@@ -408,8 +523,7 @@
                 <button type="button" class="btn small" data-pos="br">↘ י״ת</button>
               </div>
             </div>
-
-            <div class="field" style="margin-top:12px">
+            <div class="field">
               <div class="row">
                 <div>
                   <label>גודל: <b id="logoSizeVal">15</b>%</label>
@@ -421,22 +535,20 @@
                 </div>
               </div>
             </div>
-
-            <div class="field" style="margin-top:8px;margin-bottom:0">
+            <div class="field">
               <label class="field-toggle" style="font-size:12px">
-                <input type="checkbox" id="edLogoDefault"> שמור כלוגו ברירת מחדל (יטען אוטומטית בכל פעם)
+                <input type="checkbox" id="edLogoDefault"> שמור כלוגו ברירת מחדל
               </label>
             </div>
           </div>
         </div>
 
-        <div class="editor-actions">
-          <button class="btn primary" id="edDownload">⬇ הורד PNG</button>
-          <button class="btn" id="edReset">↺ אפס</button>
+        <div class="editor-section">
+          <div class="hint" style="font-size:11px;color:#6b665e">
+            כל השינויים חינמיים — לא מייצר מחדש מ-Ideogram. רק לחיצה על "צור תמונות" תיצור חיוב חדש.
+          </div>
         </div>
-        <div class="hint" style="margin-top:10px;font-size:11px;color:#6b665e">
-          כל השינויים חינמיים — לא מייצר מחדש מ-Ideogram. רק כשתשנה תיאור ותלחץ "צור" ייווצר חיוב חדש.
-        </div>
+
       </div>
     </div>
   </div>
@@ -446,7 +558,11 @@
 
 <script>
 /* ============ storage ============ */
-const LS_KEY='proper_ideogram_key', LS_HIST='proper_creative_hist', LS_LOGO='proper_default_logo';
+const LS_KEY='proper_ideogram_key', LS_HIST='proper_creative_hist',
+      LS_LOGO='proper_default_logo',
+      LS_CLIENTS='proper_clients', LS_PROJECTS='proper_projects',
+      LS_CUR_PROJ='proper_current_project';
+
 const cleanKey = k => (k || '').replace(/[^\x21-\x7E]/g, '');
 const getKey = () => cleanKey(localStorage.getItem(LS_KEY) || '');
 const setKey = k => localStorage.setItem(LS_KEY, cleanKey(k));
@@ -457,11 +573,109 @@ const pushHistory = (item) => {
   localStorage.setItem(LS_HIST, JSON.stringify(arr));
 };
 
+/* ---- clients ---- */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const getClients = () => JSON.parse(localStorage.getItem(LS_CLIENTS) || '[]');
+const saveClients = arr => localStorage.setItem(LS_CLIENTS, JSON.stringify(arr));
+function addClient(name) {
+  const arr = getClients();
+  const c = { id: uid(), name: name.trim() || 'לקוח חדש', createdAt: Date.now() };
+  arr.push(c); saveClients(arr);
+  return c;
+}
+function renameClient(id, name) {
+  const arr = getClients();
+  const c = arr.find(x => x.id === id);
+  if (c) { c.name = name.trim() || c.name; saveClients(arr); }
+}
+function deleteClient(id) {
+  saveClients(getClients().filter(x => x.id !== id));
+  /* orphan projects → become standalone */
+  const projs = getProjects();
+  projs.forEach(p => { if (p.clientId === id) p.clientId = null; });
+  saveProjects(projs);
+}
+
+/* ---- projects ---- */
+const getProjects = () => JSON.parse(localStorage.getItem(LS_PROJECTS) || '[]');
+const saveProjects = arr => localStorage.setItem(LS_PROJECTS, JSON.stringify(arr));
+function addProject(name, clientId) {
+  const arr = getProjects();
+  const p = {
+    id: uid(),
+    name: name.trim() || 'פרויקט חדש',
+    clientId: clientId || null,
+    createdAt: Date.now(),
+    images: [], // { prompt, aspect, model, cost, time, overlay }
+  };
+  arr.push(p); saveProjects(arr);
+  return p;
+}
+function renameProject(id, name) {
+  const arr = getProjects();
+  const p = arr.find(x => x.id === id);
+  if (p) { p.name = name.trim() || p.name; saveProjects(arr); }
+}
+function deleteProject(id) {
+  saveProjects(getProjects().filter(x => x.id !== id));
+  if (getCurrentProjectId() === id) {
+    const first = getProjects()[0];
+    setCurrentProjectId(first ? first.id : null);
+  }
+}
+function projectCost(p) {
+  return (p.images || []).reduce((sum, im) => sum + (im.cost || 0), 0);
+}
+function projectImageCount(p) {
+  return (p.images || []).length;
+}
+function logImageToProject(projId, imgMeta) {
+  const arr = getProjects();
+  const p = arr.find(x => x.id === projId);
+  if (!p) return;
+  p.images = p.images || [];
+  p.images.unshift(imgMeta);
+  if (p.images.length > 200) p.images = p.images.slice(0, 200);
+  saveProjects(arr);
+}
+
+/* ---- current project ---- */
+const getCurrentProjectId = () => localStorage.getItem(LS_CUR_PROJ);
+const setCurrentProjectId = id => id ? localStorage.setItem(LS_CUR_PROJ, id) : localStorage.removeItem(LS_CUR_PROJ);
+function getCurrentProject() {
+  const id = getCurrentProjectId();
+  if (!id) return null;
+  return getProjects().find(x => x.id === id) || null;
+}
+
+/* ---- cost table (USD per image) ---- */
+const MODEL_COST = {
+  'V_2': 0.08,
+  'V_2_TURBO': 0.02,
+  'V_2A': 0.09,
+  'V_2A_TURBO': 0.025,
+};
+const costOf = model => MODEL_COST[model] || 0.02;
+const fmtCost = c => '$' + (c || 0).toFixed(2);
+
+/* ---- seed default project on first ever load ---- */
+function ensureDefaultProject() {
+  if (getProjects().length === 0) {
+    const p = addProject('פרויקט כללי', null);
+    setCurrentProjectId(p.id);
+  }
+  if (!getCurrentProject()) {
+    const first = getProjects()[0];
+    if (first) setCurrentProjectId(first.id);
+  }
+}
+
 /* ============ DOM refs ============ */
 const $ = id => document.getElementById(id);
 const cards = $('cards'), historyList = $('historyList');
 const settingsModal = $('settingsModal');
 const editorModal = $('editorModal');
+const cpModal = $('cpModal');
 
 /* ============ toast ============ */
 let toastTimer = null;
@@ -622,6 +836,8 @@ async function generate() {
   $('generateBtn').disabled = true;
   $('generateBtn').textContent = useRef ? 'מבצע Remix…' : 'מייצר…';
 
+  const curProjId = getCurrentProjectId();
+
   const promises = placeholders.map(async (el) => {
     try {
       const url = await generateOne({
@@ -630,8 +846,15 @@ async function generate() {
         imageWeight: strength,
       });
       if (!url) throw new Error('לא הוחזרה תמונה');
+      /* log to current project + charge cost — only on success */
+      if (curProjId) {
+        logImageToProject(curProjId, {
+          prompt: desc, aspect, model, overlay,
+          cost: costOf(model),
+          time: Date.now(),
+        });
+      }
       el.classList.remove('loading');
-      const encUrl = encodeURIComponent(url);
       el.innerHTML = `
         <img src="${url}" alt="">
         <div class="overlay">
@@ -653,6 +876,7 @@ async function generate() {
 
   pushHistory({ prompt: desc, overlay, aspect, style, model, count, useRef: useRef?1:0, strength, time: Date.now() });
   renderHistory();
+  renderProjectBar();
 }
 
 $('generateBtn').onclick = generate;
@@ -944,6 +1168,204 @@ $('edReset').onclick = () => {
   drawEditor();
 };
 
+/* ============ clients & projects UI ============ */
+function renderProjectBar() {
+  const projects = getProjects();
+  const clients = getClients();
+  const sel = $('currentProjectSelect');
+  sel.innerHTML = '';
+
+  const groups = new Map();
+  groups.set('__standalone__', []);
+  clients.forEach(c => groups.set(c.id, []));
+  projects.forEach(p => {
+    const k = p.clientId || '__standalone__';
+    if (!groups.has(k)) groups.set('__standalone__', []).get(k).push(p);
+    groups.get(k) ? groups.get(k).push(p) : null;
+  });
+
+  clients.forEach(c => {
+    const projs = projects.filter(p => p.clientId === c.id);
+    if (!projs.length) return;
+    const og = document.createElement('optgroup');
+    og.label = '👤 ' + c.name;
+    projs.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id; o.textContent = p.name;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+  const standalone = projects.filter(p => !p.clientId);
+  if (standalone.length) {
+    const og = document.createElement('optgroup');
+    og.label = '📁 ללא לקוח';
+    standalone.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id; o.textContent = p.name;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  }
+
+  const cur = getCurrentProject();
+  if (cur) {
+    sel.value = cur.id;
+    $('curImgCount').textContent = projectImageCount(cur);
+    $('curCostTotal').textContent = fmtCost(projectCost(cur));
+  } else {
+    $('curImgCount').textContent = '0';
+    $('curCostTotal').textContent = '$0.00';
+  }
+}
+
+$('currentProjectSelect').onchange = e => {
+  setCurrentProjectId(e.target.value);
+  renderProjectBar();
+};
+
+$('quickNewProject').onclick = () => {
+  const name = prompt('שם פרויקט חדש:', 'פרויקט ' + (getProjects().length + 1));
+  if (name === null) return;
+  const clients = getClients();
+  let clientId = null;
+  if (clients.length) {
+    const clientList = clients.map((c, i) => `${i+1}. ${c.name}`).join('\n');
+    const answer = prompt(`שייך ללקוח? (השאר ריק לפרויקט עצמאי)\n\n${clientList}\n\nהקלד מספר או השאר ריק:`, '');
+    if (answer && answer.trim()) {
+      const idx = parseInt(answer.trim()) - 1;
+      if (clients[idx]) clientId = clients[idx].id;
+    }
+  }
+  const p = addProject(name, clientId);
+  setCurrentProjectId(p.id);
+  renderProjectBar();
+  toast('פרויקט "' + p.name + '" נוצר', 'success');
+};
+
+/* clients & projects modal */
+$('cpBtn').onclick = () => { renderCpModal(); cpModal.classList.add('open'); };
+$('cpClose').onclick = () => cpModal.classList.remove('open');
+cpModal.addEventListener('click', e => { if (e.target === cpModal) cpModal.classList.remove('open'); });
+
+$('addClientBtn').onclick = () => {
+  const name = prompt('שם הלקוח:');
+  if (!name || !name.trim()) return;
+  addClient(name);
+  renderCpModal();
+  renderProjectBar();
+};
+
+function renderCpModal() {
+  const clients = getClients();
+  const projects = getProjects();
+  const body = $('cpBody');
+  body.innerHTML = '';
+
+  const curId = getCurrentProjectId();
+
+  const renderProject = (p) => {
+    const row = document.createElement('div');
+    row.className = 'project-row' + (p.id === curId ? ' active' : '');
+    const cost = projectCost(p);
+    const count = projectImageCount(p);
+    row.innerHTML = `
+      <div class="pn" title="החלף לפרויקט זה">${p.name.replace(/</g,'&lt;')}</div>
+      <div class="pm"><b>${count}</b> תמונות · <b>${fmtCost(cost)}</b></div>
+      <div class="pa">
+        <button data-a="rename" title="שנה שם">✎</button>
+        <button data-a="del" class="del" title="מחק">🗑</button>
+      </div>`;
+    row.querySelector('.pn').onclick = () => {
+      setCurrentProjectId(p.id);
+      renderProjectBar(); renderCpModal();
+      toast('הועבר ל-"' + p.name + '"', 'success');
+    };
+    row.querySelector('[data-a="rename"]').onclick = () => {
+      const n = prompt('שם חדש:', p.name);
+      if (n && n.trim()) { renameProject(p.id, n); renderCpModal(); renderProjectBar(); }
+    };
+    row.querySelector('[data-a="del"]').onclick = () => {
+      if (!confirm(`למחוק את "${p.name}"?\nכל התמונות והמחיר יימחקו.`)) return;
+      deleteProject(p.id); renderCpModal(); renderProjectBar();
+      toast('נמחק', 'success');
+    };
+    return row;
+  };
+
+  const renderClient = (c) => {
+    const g = document.createElement('div');
+    g.className = 'client-group';
+    const projs = projects.filter(p => p.clientId === c.id);
+    const totalCost = projs.reduce((s, p) => s + projectCost(p), 0);
+    const totalImages = projs.reduce((s, p) => s + projectImageCount(p), 0);
+    g.innerHTML = `
+      <div class="client-header">
+        <div class="cn">👤 ${c.name.replace(/</g,'&lt;')}
+          <span style="color:#8a857c;font-weight:500;font-size:11px;margin-right:8px">
+            (${projs.length} פרויקטים · <b style="color:var(--amber)">${fmtCost(totalCost)}</b> · ${totalImages} תמונות)
+          </span>
+        </div>
+        <div class="ca">
+          <button data-a="add">+ פרויקט</button>
+          <button data-a="rename">✎</button>
+          <button data-a="del" class="del">🗑</button>
+        </div>
+      </div>`;
+    projs.forEach(p => g.appendChild(renderProject(p)));
+    g.querySelector('[data-a="add"]').onclick = () => {
+      const n = prompt('שם פרויקט חדש עבור "' + c.name + '":', 'קמפיין ' + (projs.length + 1));
+      if (!n || !n.trim()) return;
+      addProject(n, c.id); renderCpModal(); renderProjectBar();
+    };
+    g.querySelector('[data-a="rename"]').onclick = () => {
+      const n = prompt('שם חדש ללקוח:', c.name);
+      if (n && n.trim()) { renameClient(c.id, n); renderCpModal(); renderProjectBar(); }
+    };
+    g.querySelector('[data-a="del"]').onclick = () => {
+      const projs = getProjects().filter(x => x.clientId === c.id);
+      const msg = projs.length
+        ? `למחוק את "${c.name}"?\n${projs.length} פרויקטים שלו יעברו ל"ללא לקוח" (לא יימחקו).`
+        : `למחוק את "${c.name}"?`;
+      if (!confirm(msg)) return;
+      deleteClient(c.id); renderCpModal(); renderProjectBar();
+    };
+    return g;
+  };
+
+  const renderStandalone = () => {
+    const projs = projects.filter(p => !p.clientId);
+    const g = document.createElement('div');
+    g.className = 'client-group';
+    const totalCost = projs.reduce((s, p) => s + projectCost(p), 0);
+    g.innerHTML = `
+      <div class="client-header">
+        <div class="cn standalone">📁 ללא לקוח
+          <span style="font-size:11px;margin-right:8px">
+            (${projs.length} פרויקטים · <b style="color:var(--amber)">${fmtCost(totalCost)}</b>)
+          </span>
+        </div>
+        <div class="ca">
+          <button data-a="add">+ פרויקט</button>
+        </div>
+      </div>`;
+    projs.forEach(p => g.appendChild(renderProject(p)));
+    g.querySelector('[data-a="add"]').onclick = () => {
+      const n = prompt('שם פרויקט חדש:', 'פרויקט ' + (getProjects().length + 1));
+      if (!n || !n.trim()) return;
+      addProject(n, null); renderCpModal(); renderProjectBar();
+    };
+    return g;
+  };
+
+  clients.forEach(c => body.appendChild(renderClient(c)));
+  body.appendChild(renderStandalone());
+
+  if (!clients.length && !projects.length) {
+    body.innerHTML = '<div class="empty" style="padding:40px 20px">אין עדיין לקוחות או פרויקטים.<br>לחץ "+ הוסף לקוח" כדי להתחיל.</div>';
+  }
+}
+
 /* ============ history ============ */
 function renderHistory() {
   const arr = getHistory();
@@ -975,6 +1397,10 @@ function renderHistory() {
   });
 }
 renderHistory();
+
+/* ============ init projects (must run before first render) ============ */
+ensureDefaultProject();
+renderProjectBar();
 
 /* ============ open settings on first load if no key ============ */
 if (!getKey()) {
