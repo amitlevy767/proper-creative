@@ -298,10 +298,10 @@ async function generateOne(prompt, aspect, style, model, apiKey) {
   };
   if (style !== 'AUTO') body.image_request.style_type = style;
 
-  const res = await fetch('https://api.ideogram.ai/generate', {
+  const res = await fetch('/api/generate', {
     method: 'POST',
     headers: {
-      'Api-Key': apiKey,
+      'X-Ideogram-Key': apiKey,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
