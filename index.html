@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>פרופר · קריאייטיב</title>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=Amatic+SC:wght@400;700&family=Arimo:wght@400;500;600;700&family=Assistant:wght@300;400;600;700;800&family=Bellefair&family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=Heebo:wght@300;400;600;700;800;900&family=Karantina:wght@300;400;700&family=Miriam+Libre:wght@400;700&family=Rubik:wght@300;400;500;700;900&family=Secular+One&family=Suez+One&family=Varela+Round&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#050505; --ink:#f5f2ec; --dim:#4a4640;
@@ -19,24 +21,32 @@
   .brand .subtitle{font-size:11px;color:#6b665e;letter-spacing:1px;margin-top:2px}
   .brand .actions{display:flex;gap:8px}
 
-  .container{max-width:1200px;margin:0 auto;padding:24px}
+  .container{max-width:1240px;margin:0 auto;padding:24px}
 
   .grid{display:grid;grid-template-columns:360px 1fr;gap:24px}
   @media (max-width:900px){.grid{grid-template-columns:1fr}}
 
   /* form */
-  .form{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;position:sticky;top:80px;align-self:start}
+  .form{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;position:sticky;top:88px;align-self:start;max-height:calc(100vh - 110px);overflow-y:auto}
   .form h2{font-size:16px;font-weight:800;color:var(--amber);letter-spacing:1px;margin-bottom:18px}
   .field{margin-bottom:16px}
   .field label{display:block;font-size:13px;font-weight:600;color:#c9c4bc;margin-bottom:6px}
-  .field .hint{display:block;font-size:11px;color:#6b665e;margin-top:4px}
+  .field .hint{display:block;font-size:11px;color:#6b665e;margin-top:4px;line-height:1.5}
   .field input, .field textarea, .field select{
     width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;
     color:var(--ink);font-family:inherit;font-size:14px;padding:10px 12px;transition:.15s
   }
+  .field input[type="color"]{padding:2px;height:38px;cursor:pointer}
+  .field input[type="range"]{padding:0;height:6px;-webkit-appearance:none;appearance:none;background:var(--line)}
+  .field input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--amber);border-radius:50%;cursor:pointer}
+  .field input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:var(--amber);border-radius:50%;cursor:pointer;border:none}
+  .field input[type="file"]{padding:8px;font-size:12px}
   .field input:focus, .field textarea:focus, .field select:focus{outline:none;border-color:var(--amber)}
   .field textarea{resize:vertical;min-height:80px;line-height:1.6}
   .field .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .field-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:#c9c4bc}
+  .field-toggle input{width:auto}
 
   .btn{background:var(--panel);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;padding:10px 16px;border-radius:10px;cursor:pointer;transition:.15s}
   .btn:hover{border-color:var(--amber);color:var(--amber)}
@@ -45,6 +55,12 @@
   .btn.primary:hover{filter:brightness(1.08);color:#1a1204}
   .btn.small{padding:6px 10px;font-size:12px}
   .btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+  .ref-preview{margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;gap:8px;align-items:center}
+  .ref-preview img{width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0}
+  .ref-preview .rp-info{font-size:11px;color:#8a857c;flex:1;min-width:0}
+  .ref-preview .rp-info .rp-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#c9c4bc;font-weight:600}
+  .ref-preview .rp-clear{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px}
 
   /* results */
   .results{min-height:400px}
@@ -55,9 +71,11 @@
   .card.tall{aspect-ratio:9/16}
   .card.feed{aspect-ratio:4/5}
   .card img{width:100%;height:100%;object-fit:cover;display:block}
-  .card .overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85),transparent 50%);opacity:0;transition:opacity .2s;display:flex;align-items:flex-end;padding:10px;gap:8px}
-  .card:hover .overlay{opacity:1}
-  .card .overlay button{background:rgba(255,179,71,.9);border:none;color:#1a1204;font-family:inherit;font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;cursor:pointer}
+  .card .overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85),transparent 50%);opacity:0;transition:opacity .2s;display:flex;align-items:flex-end;padding:10px;gap:6px;flex-wrap:wrap}
+  .card:hover .overlay, .card:focus-within .overlay{opacity:1}
+  .card .overlay button{background:rgba(255,179,71,.95);border:none;color:#1a1204;font-family:inherit;font-size:12px;font-weight:800;padding:6px 10px;border-radius:8px;cursor:pointer;transition:.15s}
+  .card .overlay button:hover{background:#fff}
+  .card .overlay button.secondary{background:rgba(255,255,255,.15);color:#fff}
   .card.loading{display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:12px;letter-spacing:2px;text-transform:uppercase;background:var(--panel)}
   .card.loading .dot{display:inline-block;width:6px;height:6px;background:var(--amber);border-radius:50%;margin:0 3px;animation:pulse 1.2s infinite ease-in-out}
   .card.loading .dot:nth-child(2){animation-delay:.15s}
@@ -65,7 +83,7 @@
   .card.error{padding:14px;font-size:12px;color:var(--red);align-items:center;display:flex;justify-content:center;text-align:center}
   @keyframes pulse{0%,80%,100%{opacity:.3}40%{opacity:1}}
 
-  .empty{color:var(--dim);text-align:center;padding:80px 20px;font-size:14px}
+  .empty{color:var(--dim);text-align:center;padding:80px 20px;font-size:14px;line-height:1.7}
 
   /* history */
   .history{margin-top:32px;border-top:1px solid var(--line);padding-top:24px}
@@ -84,6 +102,20 @@
   .modal .modal-hint a{color:var(--amber);text-decoration:underline}
   .modal .row{display:flex;gap:10px;margin-top:16px}
 
+  /* editor modal */
+  .editor-modal{max-width:1200px;padding:0}
+  .editor-modal header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .editor-modal header h2{margin:0}
+  .editor-modal .close{background:none;border:none;color:#9a958c;font-size:20px;cursor:pointer;padding:4px 10px}
+  .editor-body{display:grid;grid-template-columns:1fr 340px;gap:0;max-height:calc(100vh - 100px)}
+  @media (max-width:900px){.editor-body{grid-template-columns:1fr;max-height:none}}
+  .editor-preview{background:#0a0a09;padding:16px;display:flex;align-items:center;justify-content:center;min-height:400px}
+  .editor-preview canvas{max-width:100%;max-height:calc(100vh - 160px);display:block;border:1px solid var(--line);border-radius:8px}
+  .editor-controls{border-right:1px solid var(--line);padding:20px;overflow-y:auto}
+  @media (max-width:900px){.editor-controls{border-right:none;border-top:1px solid var(--line);max-height:60vh}}
+  .editor-actions{display:flex;gap:8px;margin-top:12px}
+  .editor-actions .btn{flex:1}
+
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--amber);color:var(--ink);padding:12px 20px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transition:opacity .2s}
   .toast.show{opacity:1}
   .toast.error{border-color:var(--red)}
@@ -95,7 +127,7 @@
 <div class="brand">
   <div>
     <h1>PROPER · CREATIVE</h1>
-    <div class="subtitle">AI IMAGE GENERATOR · IDEOGRAM</div>
+    <div class="subtitle">AI IMAGE GENERATOR · IDEOGRAM + HEBREW OVERLAY</div>
   </div>
   <div class="actions">
     <button class="btn small" id="settingsBtn">⚙ הגדרות</button>
@@ -110,15 +142,28 @@
       <h2>יצירת תמונה</h2>
 
       <div class="field">
-        <label>תיאור התמונה</label>
-        <textarea id="promptBox" placeholder="לדוגמה: רואה חשבון יושב במשרד מודרני, מסתכל למצלמה בביטחון. תאורה טבעית, סגנון מקצועי ונקי. רקע לבן."></textarea>
-        <span class="hint">כתוב בעברית או באנגלית — המערכת מתרגמת אוטומטית</span>
+        <label>תיאור התמונה (באנגלית או עברית)</label>
+        <textarea id="promptBox" placeholder="לדוגמה: משרד רואה חשבון נקי, אור טבעי, שולחן עץ, מחשב, ספרים על הרקע. סגנון צילום פרימיום."></textarea>
+        <span class="hint">הכלי מייצר תמונה נקייה. הטקסט העברי מתווסף אחר כך בעורך.</span>
       </div>
 
       <div class="field">
-        <label>מסר להופיע על התמונה (אופציונלי)</label>
+        <label>טקסט הפוסט (לעורך)</label>
         <input type="text" id="overlayText" placeholder="לדוגמה: הליד שלך שווה יותר">
-        <span class="hint">Ideogram מצייר את הטקסט בעברית טוב מרוב המודלים</span>
+        <span class="hint">נשמר לעורך הטקסט לאחר יצירה. לא נשלח ל-AI.</span>
+      </div>
+
+      <div class="field">
+        <label class="field-toggle">
+          <input type="checkbox" id="useReference"> תמונת רפרנס (סגנון דומה — Remix)
+        </label>
+        <div id="referenceBox" style="display:none;margin-top:10px">
+          <input type="file" id="refFile" accept="image/*">
+          <div id="refPreview"></div>
+          <label style="margin-top:12px">עוצמת השפעה: <b id="strengthVal">50</b>%</label>
+          <input type="range" id="strength" min="10" max="90" value="50">
+          <span class="hint">גבוה יותר = יותר דומה לרפרנס. 50% = איזון טוב בין רפרנס לתיאור.</span>
+        </div>
       </div>
 
       <div class="field">
@@ -126,9 +171,9 @@
           <div>
             <label>פורמט</label>
             <select id="aspect">
-              <option value="ASPECT_1_1">1:1 · ריבוע (פוסט)</option>
-              <option value="ASPECT_4_5">4:5 · פיד (מומלץ IG)</option>
-              <option value="ASPECT_9_16">9:16 · סטורי / ריל</option>
+              <option value="ASPECT_1_1">1:1 · ריבוע</option>
+              <option value="ASPECT_4_5">4:5 · פיד (IG)</option>
+              <option value="ASPECT_9_16">9:16 · סטורי</option>
               <option value="ASPECT_16_9">16:9 · פייסבוק רחב</option>
               <option value="ASPECT_3_4">3:4 · פורטרייט</option>
             </select>
@@ -177,7 +222,10 @@
     <div class="results">
       <h2 id="resultsTitle">תוצאות</h2>
       <div class="cards" id="cards">
-        <div class="empty">בחר פרמטרים ותקבל תמונות תוך שניות. אם לא הזנת מפתח API — פתח את ההגדרות למעלה.</div>
+        <div class="empty">
+          מלא תיאור בעברית או באנגלית, לחץ "צור תמונות".<br>
+          לאחר יצירה — הקש <b>✎ ערוך טקסט</b> על תמונה כדי להוסיף מסר עברי.
+        </div>
       </div>
 
       <div class="history">
@@ -195,7 +243,7 @@
     <h2>הגדרות · מפתח API</h2>
     <div class="modal-hint">
       המפתח נשמר רק בדפדפן שלך (localStorage). לא נשלח לשום שרת מלבד Ideogram.<br>
-      אין לך מפתח? <a href="https://ideogram.ai/manage-api" target="_blank">קבל אחד כאן</a> (Basic · $8/חודש).
+      אין לך מפתח? <a href="https://ideogram.ai/manage-api" target="_blank">קבל אחד כאן</a>.
     </div>
     <div class="field">
       <label>Ideogram API Key</label>
@@ -209,12 +257,115 @@
   </div>
 </div>
 
+<!-- editor modal -->
+<div class="modal-backdrop" id="editorModal">
+  <div class="modal editor-modal">
+    <header>
+      <h2>עורך טקסט עברי</h2>
+      <button class="close" id="editorClose">✕</button>
+    </header>
+    <div class="editor-body">
+      <div class="editor-preview">
+        <canvas id="editorCanvas"></canvas>
+      </div>
+      <div class="editor-controls">
+        <div class="field">
+          <label>טקסט</label>
+          <textarea id="edText" rows="3" placeholder="הכנס טקסט להצגה על התמונה"></textarea>
+        </div>
+
+        <div class="field">
+          <label>פונט</label>
+          <select id="edFont">
+            <option value="Heebo">Heebo — מודרני, חמים</option>
+            <option value="Assistant">Assistant — נקי, מקצועי</option>
+            <option value="Rubik">Rubik — עגול, ידידותי</option>
+            <option value="Frank Ruhl Libre">Frank Ruhl — אלגנטי, ספרותי</option>
+            <option value="Miriam Libre">Miriam Libre — סריפי מסורתי</option>
+            <option value="Karantina">Karantina — דחוס, נוקב</option>
+            <option value="Suez One">Suez One — כבד, בולט</option>
+            <option value="Bellefair">Bellefair — קלאסי דק</option>
+            <option value="Amatic SC">Amatic SC — כתב יד</option>
+            <option value="Secular One">Secular One — סטטמנט</option>
+            <option value="Varela Round">Varela Round — עגלגל רך</option>
+            <option value="Alef">Alef — פשוט, קריא</option>
+            <option value="Arimo">Arimo — סטנדרטי בטוח</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <div class="row">
+            <div>
+              <label>משקל</label>
+              <select id="edWeight">
+                <option value="300">דק (300)</option>
+                <option value="400">רגיל (400)</option>
+                <option value="500">בינוני (500)</option>
+                <option value="600">חצי-כבד (600)</option>
+                <option value="700" selected>מודגש (700)</option>
+                <option value="800">כבד (800)</option>
+                <option value="900">שחור (900)</option>
+              </select>
+            </div>
+            <div>
+              <label>גודל: <b id="sizeVal">80</b>px</label>
+              <input type="range" id="edSize" min="20" max="240" value="80">
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="row">
+            <div>
+              <label>צבע טקסט</label>
+              <input type="color" id="edColor" value="#ffffff">
+            </div>
+            <div>
+              <label>מיקום אנכי</label>
+              <select id="edPosY">
+                <option value="top">למעלה</option>
+                <option value="center">מרכז</option>
+                <option value="bottom" selected>למטה</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-toggle">
+            <input type="checkbox" id="edBox" checked> רקע מאחורי הטקסט
+          </label>
+          <div id="edBoxControls" style="margin-top:10px">
+            <div class="row">
+              <div>
+                <label>צבע רקע</label>
+                <input type="color" id="edBoxColor" value="#000000">
+              </div>
+              <div>
+                <label>שקיפות: <b id="opacityVal">55</b>%</label>
+                <input type="range" id="edBoxOpacity" min="0" max="100" value="55">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-actions">
+          <button class="btn primary" id="edDownload">⬇ הורד PNG</button>
+          <button class="btn" id="edReset">↺ אפס</button>
+        </div>
+        <div class="hint" style="margin-top:10px;font-size:11px;color:#6b665e">
+          כל השינויים חינמיים — לא מייצר מחדש מ-Ideogram. רק כשתשנה תיאור ותלחץ "צור" ייווצר חיוב חדש.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 /* ============ storage ============ */
 const LS_KEY='proper_ideogram_key', LS_HIST='proper_creative_hist';
-/* strip anything outside printable ASCII — headers must be ISO-8859-1 */
 const cleanKey = k => (k || '').replace(/[^\x21-\x7E]/g, '');
 const getKey = () => cleanKey(localStorage.getItem(LS_KEY) || '');
 const setKey = k => localStorage.setItem(LS_KEY, cleanKey(k));
@@ -228,7 +379,8 @@ const pushHistory = (item) => {
 /* ============ DOM refs ============ */
 const $ = id => document.getElementById(id);
 const cards = $('cards'), historyList = $('historyList');
-const modal = $('settingsModal');
+const settingsModal = $('settingsModal');
+const editorModal = $('editorModal');
 
 /* ============ toast ============ */
 let toastTimer = null;
@@ -243,15 +395,15 @@ function toast(msg, type='') {
 /* ============ settings modal ============ */
 $('settingsBtn').onclick = () => {
   $('apiKeyInput').value = getKey();
-  modal.classList.add('open');
+  settingsModal.classList.add('open');
 };
-$('closeSettingsBtn').onclick = () => modal.classList.remove('open');
+$('closeSettingsBtn').onclick = () => settingsModal.classList.remove('open');
 $('saveKeyBtn').onclick = () => {
   const k = $('apiKeyInput').value.trim();
   if (!k) { toast('לא הוזן מפתח', 'error'); return; }
   setKey(k);
   toast('נשמר בהצלחה', 'success');
-  modal.classList.remove('open');
+  settingsModal.classList.remove('open');
 };
 $('clearKeyBtn').onclick = () => {
   if (!confirm('למחוק את המפתח?')) return;
@@ -259,58 +411,65 @@ $('clearKeyBtn').onclick = () => {
   $('apiKeyInput').value = '';
   toast('נמחק', 'success');
 };
-modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.remove('open'); });
 
 /* ============ aspect helpers ============ */
-const aspectClass = {
-  'ASPECT_1_1': '',
-  'ASPECT_4_5': 'feed',
-  'ASPECT_9_16': 'tall',
-  'ASPECT_16_9': 'wide',
-  'ASPECT_3_4': 'feed',
+const aspectClass = {'ASPECT_1_1':'','ASPECT_4_5':'feed','ASPECT_9_16':'tall','ASPECT_16_9':'wide','ASPECT_3_4':'feed'};
+const aspectLabel = {'ASPECT_1_1':'1:1','ASPECT_4_5':'4:5','ASPECT_9_16':'9:16','ASPECT_16_9':'16:9','ASPECT_3_4':'3:4'};
+
+/* ============ reference toggle ============ */
+$('useReference').onchange = e => {
+  $('referenceBox').style.display = e.target.checked ? 'block' : 'none';
 };
-const aspectLabel = {
-  'ASPECT_1_1': '1:1',
-  'ASPECT_4_5': '4:5',
-  'ASPECT_9_16': '9:16',
-  'ASPECT_16_9': '16:9',
-  'ASPECT_3_4': '3:4',
+$('strength').oninput = e => { $('strengthVal').textContent = e.target.value; };
+
+let refFileData = null; // { file, dataUrl }
+$('refFile').onchange = async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const dataUrl = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(file); });
+  refFileData = { file, dataUrl };
+  $('refPreview').innerHTML = `
+    <div class="ref-preview">
+      <img src="${dataUrl}" alt="">
+      <div class="rp-info"><div class="rp-name">${file.name}</div><div>${Math.round(file.size/1024)} KB</div></div>
+      <button class="rp-clear" id="rpClear" title="הסר">✕</button>
+    </div>`;
+  $('rpClear').onclick = () => { refFileData = null; $('refFile').value=''; $('refPreview').innerHTML=''; };
 };
 
-/* ============ build full prompt ============ */
-function buildPrompt(desc, overlayText) {
-  let p = desc.trim();
-  if (overlayText.trim()) {
-    p += `. Include the following text prominently in the image: "${overlayText.trim()}"`;
-  }
-  return p;
-}
+/* ============ generate — text or remix ============ */
+async function generateOne({ prompt, aspect, style, model, apiKey, referenceFile, imageWeight }) {
+  const isRemix = !!referenceFile;
 
-/* ============ generate ============ */
-async function generateOne(prompt, aspect, style, model, apiKey) {
-  const body = {
-    image_request: {
-      prompt,
-      aspect_ratio: aspect,
-      model,
-      magic_prompt_option: 'AUTO',
-    }
-  };
-  if (style !== 'AUTO') body.image_request.style_type = style;
+  if (isRemix) {
+    const form = new FormData();
+    const req = { prompt, aspect_ratio: aspect, model, magic_prompt_option: 'AUTO', image_weight: imageWeight };
+    if (style !== 'AUTO') req.style_type = style;
+    form.append('image_request', JSON.stringify(req));
+    form.append('image_file', referenceFile);
 
-  const res = await fetch('/api/generate', {
-    method: 'POST',
-    headers: {
-      'X-Ideogram-Key': apiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-  const j = await res.json();
-  if (!res.ok) {
-    throw new Error(j.detail || j.error || `HTTP ${res.status}`);
+    const res = await fetch('/api/remix', {
+      method: 'POST',
+      headers: { 'X-Ideogram-Key': apiKey },
+      body: form,
+    });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.detail || j.error || `HTTP ${res.status}`);
+    return j.data && j.data[0] && j.data[0].url;
+  } else {
+    const body = { image_request: { prompt, aspect_ratio: aspect, model, magic_prompt_option: 'AUTO' } };
+    if (style !== 'AUTO') body.image_request.style_type = style;
+
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'X-Ideogram-Key': apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.detail || j.error || `HTTP ${res.status}`);
+    return j.data && j.data[0] && j.data[0].url;
   }
-  return j.data && j.data[0] && j.data[0].url;
 }
 
 async function generate() {
@@ -319,16 +478,17 @@ async function generate() {
 
   const desc = $('promptBox').value.trim();
   if (!desc) { toast('חסר תיאור תמונה', 'error'); return; }
+
   const overlay = $('overlayText').value.trim();
   const aspect = $('aspect').value;
   const style = $('style').value;
   const model = $('model').value;
   const count = parseInt($('count').value);
+  const useRef = $('useReference').checked && refFileData;
+  const strength = parseInt($('strength').value);
 
-  const prompt = buildPrompt(desc, overlay);
   const cls = aspectClass[aspect] || '';
 
-  /* placeholder loading cards */
   cards.innerHTML = '';
   const placeholders = [];
   for (let i = 0; i < count; i++) {
@@ -340,18 +500,24 @@ async function generate() {
   }
 
   $('generateBtn').disabled = true;
-  $('generateBtn').textContent = 'מייצר…';
+  $('generateBtn').textContent = useRef ? 'מבצע Remix…' : 'מייצר…';
 
-  const promises = placeholders.map(async (el, i) => {
+  const promises = placeholders.map(async (el) => {
     try {
-      const url = await generateOne(prompt, aspect, style, model, apiKey);
+      const url = await generateOne({
+        prompt: desc, aspect, style, model, apiKey,
+        referenceFile: useRef ? refFileData.file : null,
+        imageWeight: strength,
+      });
       if (!url) throw new Error('לא הוחזרה תמונה');
       el.classList.remove('loading');
+      const encUrl = encodeURIComponent(url);
       el.innerHTML = `
         <img src="${url}" alt="">
         <div class="overlay">
-          <button data-url="${url}" data-act="dl">⬇ הורדה</button>
-          <button data-url="${url}" data-act="open">🔗 פתח</button>
+          <button data-url="${url}" data-act="edit">✎ ערוך טקסט</button>
+          <button data-url="${url}" data-act="dl" class="secondary">⬇ הורד</button>
+          <button data-url="${url}" data-act="open" class="secondary">🔗 פתח</button>
         </div>`;
     } catch (err) {
       el.classList.remove('loading');
@@ -365,15 +531,7 @@ async function generate() {
   $('generateBtn').disabled = false;
   $('generateBtn').textContent = '✨ צור תמונות';
 
-  pushHistory({
-    prompt: desc,
-    overlay,
-    aspect,
-    style,
-    model,
-    count,
-    time: Date.now(),
-  });
+  pushHistory({ prompt: desc, overlay, aspect, style, model, count, useRef: useRef?1:0, strength, time: Date.now() });
   renderHistory();
 }
 
@@ -384,24 +542,188 @@ cards.addEventListener('click', async (e) => {
   const btn = e.target.closest('button[data-url]');
   if (!btn) return;
   const url = btn.dataset.url;
-  if (btn.dataset.act === 'open') {
+  const act = btn.dataset.act;
+
+  if (act === 'open') {
     window.open(url, '_blank');
-  } else if (btn.dataset.act === 'dl') {
+  } else if (act === 'dl') {
     try {
-      const r = await fetch(url);
+      const r = await fetch('/api/image?url=' + encodeURIComponent(url));
       const blob = await r.blob();
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `proper-creative-${Date.now()}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(a.href);
-    } catch {
-      window.open(url, '_blank');
-    }
+      downloadBlob(blob, `proper-${Date.now()}.png`);
+    } catch { window.open(url, '_blank'); }
+  } else if (act === 'edit') {
+    openEditor(url);
   }
 });
+
+function downloadBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* ============ editor ============ */
+const canvas = $('editorCanvas');
+const ctx = canvas.getContext('2d');
+let editorImg = null;
+
+async function openEditor(url) {
+  $('edText').value = $('overlayText').value || '';
+  editorModal.classList.add('open');
+  toast('טוען תמונה…');
+
+  try {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    /* fetch via our proxy to guarantee same-origin (avoids canvas taint) */
+    img.src = '/api/image?url=' + encodeURIComponent(url);
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(new Error('נכשל בטעינת תמונה'));
+    });
+    editorImg = img;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    await drawEditor();
+    toast('מוכן לעריכה', 'success');
+  } catch (err) {
+    toast('שגיאה: ' + err.message, 'error');
+  }
+}
+
+$('editorClose').onclick = () => editorModal.classList.remove('open');
+editorModal.addEventListener('click', e => { if (e.target === editorModal) editorModal.classList.remove('open'); });
+
+/* live redraw on any change */
+['edText','edFont','edWeight','edSize','edColor','edPosY','edBox','edBoxColor','edBoxOpacity'].forEach(id => {
+  $(id).addEventListener('input', () => { syncEditorLabels(); drawEditor(); });
+  $(id).addEventListener('change', () => { syncEditorLabels(); drawEditor(); });
+});
+
+function syncEditorLabels() {
+  $('sizeVal').textContent = $('edSize').value;
+  $('opacityVal').textContent = $('edBoxOpacity').value;
+  $('edBoxControls').style.display = $('edBox').checked ? 'block' : 'none';
+}
+
+function wrapText(text, maxWidth, ctx) {
+  const paragraphs = text.split(/\n+/);
+  const out = [];
+  for (const p of paragraphs) {
+    const words = p.split(/\s+/).filter(Boolean);
+    let current = '';
+    for (const w of words) {
+      const test = current ? current + ' ' + w : w;
+      if (ctx.measureText(test).width > maxWidth && current) {
+        out.push(current);
+        current = w;
+      } else current = test;
+    }
+    if (current) out.push(current);
+  }
+  return out;
+}
+
+async function drawEditor() {
+  if (!editorImg) return;
+  ctx.drawImage(editorImg, 0, 0);
+
+  const text = $('edText').value;
+  if (!text.trim()) return;
+
+  const font = $('edFont').value;
+  const weight = $('edWeight').value;
+  const size = parseInt($('edSize').value);
+  const color = $('edColor').value;
+  const posY = $('edPosY').value;
+  const useBox = $('edBox').checked;
+  const boxColor = $('edBoxColor').value;
+  const boxOpacity = parseInt($('edBoxOpacity').value) / 100;
+
+  const fontString = `${weight} ${size}px "${font}", sans-serif`;
+  /* Wait for font to be actually loaded before drawing */
+  try { await document.fonts.load(fontString); } catch (_) {}
+
+  ctx.font = fontString;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.direction = 'rtl';
+
+  const maxWidth = canvas.width * 0.86;
+  const lines = wrapText(text, maxWidth, ctx);
+  const lineHeight = size * 1.28;
+  const totalHeight = lines.length * lineHeight;
+
+  const marginY = size * 0.7;
+  let startY;
+  if (posY === 'top') startY = marginY + size;
+  else if (posY === 'bottom') startY = canvas.height - marginY - totalHeight + size;
+  else startY = canvas.height / 2 - totalHeight / 2 + size;
+
+  const centerX = canvas.width / 2;
+
+  if (useBox) {
+    const boxPad = size * 0.45;
+    const widths = lines.map(l => ctx.measureText(l).width);
+    const maxLineWidth = Math.max(...widths);
+    const boxX = centerX - maxLineWidth/2 - boxPad;
+    const boxY = startY - size - boxPad * 0.6;
+    const boxW = maxLineWidth + boxPad * 2;
+    const boxH = totalHeight + boxPad * 1.2;
+
+    ctx.save();
+    ctx.globalAlpha = boxOpacity;
+    ctx.fillStyle = boxColor;
+    const r = size * 0.15;
+    /* rounded rect */
+    ctx.beginPath();
+    ctx.moveTo(boxX + r, boxY);
+    ctx.lineTo(boxX + boxW - r, boxY);
+    ctx.quadraticCurveTo(boxX + boxW, boxY, boxX + boxW, boxY + r);
+    ctx.lineTo(boxX + boxW, boxY + boxH - r);
+    ctx.quadraticCurveTo(boxX + boxW, boxY + boxH, boxX + boxW - r, boxY + boxH);
+    ctx.lineTo(boxX + r, boxY + boxH);
+    ctx.quadraticCurveTo(boxX, boxY + boxH, boxX, boxY + boxH - r);
+    ctx.lineTo(boxX, boxY + r);
+    ctx.quadraticCurveTo(boxX, boxY, boxX + r, boxY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.fillStyle = color;
+  lines.forEach((line, i) => {
+    ctx.fillText(line, centerX, startY + i * lineHeight);
+  });
+}
+
+$('edDownload').onclick = () => {
+  if (!editorImg) return;
+  canvas.toBlob(blob => {
+    if (!blob) { toast('שגיאה בייצוא', 'error'); return; }
+    downloadBlob(blob, `proper-creative-${Date.now()}.png`);
+    toast('הורד', 'success');
+  }, 'image/png', 0.95);
+};
+
+$('edReset').onclick = () => {
+  $('edText').value = $('overlayText').value || '';
+  $('edFont').value = 'Heebo';
+  $('edWeight').value = '700';
+  $('edSize').value = '80';
+  $('edColor').value = '#ffffff';
+  $('edPosY').value = 'bottom';
+  $('edBox').checked = true;
+  $('edBoxColor').value = '#000000';
+  $('edBoxOpacity').value = '55';
+  syncEditorLabels();
+  drawEditor();
+};
 
 /* ============ history ============ */
 function renderHistory() {
@@ -416,9 +738,10 @@ function renderHistory() {
     div.className = 'history-item';
     const d = new Date(item.time);
     const timeStr = d.toLocaleDateString('he-IL') + ' ' + d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+    const remix = item.useRef ? ' · Remix' : '';
     div.innerHTML = `
       <div class="h-text">${item.prompt.replace(/</g,'&lt;')}</div>
-      <div class="h-meta">${aspectLabel[item.aspect] || ''} · ${timeStr}</div>`;
+      <div class="h-meta">${aspectLabel[item.aspect] || ''}${remix} · ${timeStr}</div>`;
     div.onclick = () => {
       $('promptBox').value = item.prompt;
       $('overlayText').value = item.overlay || '';
@@ -436,7 +759,7 @@ renderHistory();
 
 /* ============ open settings on first load if no key ============ */
 if (!getKey()) {
-  setTimeout(() => modal.classList.add('open'), 400);
+  setTimeout(() => settingsModal.classList.add('open'), 400);
 }
 </script>
 </body>
